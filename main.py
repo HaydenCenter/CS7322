@@ -1,3 +1,3 @@
 from BigramModel import BigramModel
 
-bg = BigramModel()
+bg = BigramModel(dirName="documents")
