@@ -1,0 +1,1 @@
+Dog is this dog. Cat is this cat. Dog is a not cat. Good cat is not a dog. 
