@@ -84,12 +84,6 @@ class BigramModel:
             else:
                 counts[item] = 1
 
-    # def __getWordList(self, word):
-    #     if word in self.otherWordList:
-    #         return self.otherWordList
-    #     else:
-    #         return [word]
-
     def __probCalc(self, w1, w2):
         f = None
         k = self.smooth
@@ -149,8 +143,7 @@ try:
 except LookupError:
     nltk.download('stopwords')
 
-bg = BigramModel(dirName="Program1\\documents", toload=False, smooth=1, stopWordList=stopwords.words('english'), otherWordList=[], singlesen=False) # DEBUG
-# bg = BigramModel(dirName="Program1\\_prog1", singlesen=False, stopWordList=["is", "a"], otherWordList=["dog", "cat", "good"], smooth=0) # DEBUG
-# [print(i) for i in bg.getAll(sortMethod=2)]
-f = open("output.txt", "w").write("\n".join([str(i) for i in bg.getAll(sortMethod=2)]))
-# [print(bigram) for bigram in bg.getProbList("tony", sortMethod=2)]
+# bg = BigramModel(dirName="Program1\\documents", toload=False, smooth=1, stopWordList=stopwords.words('english'), otherWordList=[], singlesen=False) # DEBUG
+bg = BigramModel(dirName="Program1\\_prog1", singlesen=False, stopWordList=["is", "a"], otherWordList=["dog", "cat", "good"], smooth=0) # DEBUG
+text = "\n".join([str(i) for i in bg.getAll()])
+f = open("output.txt", "w").write(text)
