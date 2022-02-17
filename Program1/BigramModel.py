@@ -1,12 +1,7 @@
-from genericpath import exists
 import os, sys
 import re
-import nltk
-from nltk.corpus import stopwords
-
+from genericpath import exists
 from nltk import sent_tokenize, RegexpTokenizer, bigrams
-
-# TODO: otherWordList
 
 class BigramModel:
     def __init__(self, name = "default", dirName = '.', ext = '*', toload = False, smooth = 0, stopWordList = [], otherWordList = [], singlesen = False):
@@ -208,14 +203,3 @@ class BigramModel:
         f.write(''.join([f'{bg[0]}\t{bg[1]}\t{self.bigramCounts[bg]}\n' for bg in self.bigramCounts]))
 
         f.close()
-
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    nltk.download('stopwords')
-
-# bg = BigramModel(dirName="Program1\\documents", toload=False, smooth=1, stopWordList=stopwords.words('english'), otherWordList=[], singlesen=False) # DEBUG
-bg = BigramModel(name="default", dirName="Program1\\_prog1", toload=False, smooth=.3, stopWordList=["is", "a"], otherWordList=[], singlesen=True) # DEBUG
-bg.save()
-text = "\n".join([str(i) for i in bg.getAll(sortMethod=1)])
-f = open("output.txt", "w").write(text)
