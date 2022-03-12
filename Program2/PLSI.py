@@ -8,7 +8,7 @@ from nltk.stem.snowball import SnowballStemmer
 
 class PLSI:
     def __init__(self, name="default", dirName='.', ext='*', toLoad=False, stopWordList=[],
-                       ignoreCase=True, stem=None, topicCount=2, iterations=2):
+                       ignoreCase=True, stem=None, topicCount=2, iterations=2, randomInit=None):
 
         # region Preprocessing
         self.name = name
@@ -69,17 +69,26 @@ class PLSI:
             [wordSet.add(word) for word in words]
 
         # endregion Preprocessing
-
-        z = pd.DataFrame(data=0, columns=range(topicCount), index=sorted(wordSet))
-        d = pd.DataFrame(data=0, index=range(topicCount),   columns=files)
         
-        # region first iteration
-        for docNum, doc in enumerate(files):
-            for wordNum, word in enumerate(probs[doc].columns):
-                topic = (docNum + wordNum) % topicCount
-                z.at[word, topic] = z.at[word, topic] + 1
-                d.at[topic, doc] = d.at[topic, doc] + 1
-
+        # region Generation
+        zRows = len(wordSet)
+        zCols = topicCount
+        dRows = topicCount
+        dCols = len(files)
+        if randomInit == "random":
+            z = pd.DataFrame(index=sorted(wordSet),   columns=range(topicCount), data=np.random.rand(zRows, zCols))
+            d = pd.DataFrame(index=range(topicCount), columns=files,             data=np.random.rand(dRows, dCols))
+        elif randomInit == "dirichlet":
+            z = pd.DataFrame(index=sorted(wordSet),   columns=range(topicCount), data=1)
+            d = pd.DataFrame(index=range(topicCount), columns=files,             data=np.random.dirichlet([0.2]*dRows, dCols).transpose())
+        else:
+            z = pd.DataFrame(index=sorted(wordSet),   columns=range(topicCount), data=0)
+            d = pd.DataFrame(index=range(topicCount), columns=files,             data=0)
+            for docNum, doc in enumerate(files):
+                for wordNum, word in enumerate(probs[doc].columns):
+                    topic = (docNum + wordNum) % topicCount
+                    z.at[word, topic] = z.at[word, topic] + 1
+                    d.at[topic, doc] = d.at[topic, doc] + 1
 
         for col in z:
             total = z[col].sum()
@@ -89,7 +98,7 @@ class PLSI:
             total = d[col].sum()
             for topic, n in d[col].iteritems():
                 d.at[topic, col] = n / total
-        # endregion first iteration
+        # endregion Generation
 
 
         # region iterate
@@ -166,12 +175,3 @@ class PLSI:
         f = open(self.name + ".plsi", "w")
         f.write("<>\n".join([self.z.to_csv(), self.d.to_csv()]))
         f.close()
-
-
-plsi = PLSI(dirName="Program2/_test", topicCount=3, iterations=1, toLoad=True)
-print(plsi.getDocumentTopic(docName="a.txt"))
-[print(x, y) for x, y in plsi.getAllDocumentTopic()]
-print(plsi.getTopicWordVector(0, topCount=1))
-print(plsi.getTopicWordVectorAll(topCount=1))
-plsi.ExtendedPrint("_data")
-plsi.save()
