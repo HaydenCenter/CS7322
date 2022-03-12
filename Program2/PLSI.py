@@ -1,6 +1,7 @@
 import os, sys
 import re
 import numpy as np, pandas as pd
+from io import StringIO
 from genericpath import exists
 from nltk import sent_tokenize, RegexpTokenizer
 from nltk.stem.snowball import SnowballStemmer
@@ -10,16 +11,18 @@ class PLSI:
                        ignoreCase=True, stem=None, topicCount=2, iterations=2):
 
         # region Preprocessing
+        self.name = name
+
         if toLoad:
             if not exists(name + ".plsi"):
                 sys.exit("Invalid model name: " + name + ". File " + name + ".plsi does not exist")
             f = open(name + ".plsi", "r")
-            model = f.read().splitlines()
             
-            try:
-                print("TODO: Load Model")
-            except:
-                sys.exit("Invalid model format") 
+            # try:
+            text = f.read().split("<>\n")
+            self.z = pd.read_csv(StringIO(text[0]), header=0, index_col=0)
+            self.d = pd.read_csv(StringIO(text[1]), header=0, index_col=0)
+            self.z.rename(mapper=int, axis=1, inplace=True)
             return
 
         if not os.path.isdir(dirName):
@@ -77,8 +80,6 @@ class PLSI:
                 z.at[word, topic] = z.at[word, topic] + 1
                 d.at[topic, doc] = d.at[topic, doc] + 1
 
-        print(z)
-        print(d)
 
         for col in z:
             total = z[col].sum()
@@ -90,11 +91,9 @@ class PLSI:
                 d.at[topic, col] = n / total
         # endregion first iteration
 
-        print(z)
-        print(d)
 
         # region iterate
-        for i in range(iterations - 1):
+        for i in range(iterations):
             # Generating word probabilities
             for docNum, doc in enumerate(files):
                 for word in probs[doc].columns:
@@ -122,8 +121,57 @@ class PLSI:
                     z.at[word, topic] = numer / denom
         # endregion iterate
 
-        [print(doc, '\n', probs[doc]) for doc in probs]
-        print(z)
-        print(d)
+        self.z = z
+        self.d = d
 
-plsi = PLSI(dirName="Program1\\_prog1")
+    def getDocumentTopic(self, docNum=-1, docName=""):
+        if docNum >= len(self.d.columns) or docNum < 0:
+            vector = self.d.get(docName, default=[])
+        else:
+            vector = self.d.iloc[:, docNum]
+
+        return list(vector)
+
+    def getAllDocumentTopic(self):
+        return [(col, self.getDocumentTopic(docName=col)) for col in self.d.columns]
+
+    def getTopicWordVector(self, topicNum, topCount=10):
+        if topicNum >= len(self.z.columns) or topicNum < 0:
+            return {}
+        
+        vector = self.z[topicNum].sort_values(ascending=False)
+        if topCount > 0:
+            vector = vector[:topCount]
+        return vector.to_dict()
+
+    def getTopicWordVectorAll(self, topCount=10):
+        return[self.getTopicWordVector(topic, topCount) for topic in self.z.columns]
+
+    def ExtendedPrint(self, dnamSuffix=""):
+        dirName = self.name + dnamSuffix
+        if not os.path.exists(dirName): os.mkdir(dirName)
+        f = open(dirName + "\\document-topics", "w+")
+        for doc in self.d.columns:
+            f.write(doc)
+            [f.write(f' {x}') for x in self.d[doc]]
+            f.write('\n')
+        f.close()
+
+        for topic in self.z.columns:
+            f = open(f'{dirName}\\topic_{topic + 1}', "w")
+            [f.write(f'{word} {x}\n') for word, x in self.getTopicWordVector(topic, topCount=-1).items()]
+            f.close()
+
+    def save(self):
+        f = open(self.name + ".plsi", "w")
+        f.write("<>\n".join([self.z.to_csv(), self.d.to_csv()]))
+        f.close()
+
+
+plsi = PLSI(dirName="Program2/_test", topicCount=3, iterations=1, toLoad=True)
+print(plsi.getDocumentTopic(docName="a.txt"))
+[print(x, y) for x, y in plsi.getAllDocumentTopic()]
+print(plsi.getTopicWordVector(0, topCount=1))
+print(plsi.getTopicWordVectorAll(topCount=1))
+plsi.ExtendedPrint("_data")
+plsi.save()

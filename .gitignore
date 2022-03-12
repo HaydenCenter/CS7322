@@ -1,4 +1,8 @@
 documents/
+_test/
 __pycache__/
 **/*.pdf
 **/*.bgmodel
+**/*.plsi
+**/document-topics
+**/topic_*
