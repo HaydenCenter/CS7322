@@ -1,0 +1,32 @@
+Program that will
+    Ask the user to input a sentence
+    Output all possible questions that can be answered by the sentence
+        One question per line
+        Questions as specific as possible
+    
+Tools allowed
+    ANY tools talked about in class
+        stemming
+        lemmetization
+        POS tagging
+        noun-phrase extraction
+        lexical parsing
+        dependency parsing
+        N-gram models
+        Named entity recognition
+        Topic modeling via gensim
+        Unsupervised text clustering
+        WordNet
+
+Run on command line
+All external tools must be free
+
+Submission
+    Program
+    Text file describing how to install and run the program
+    1-2 page document outlining methodology
+    Zipped together (3MB limit)
+
+Grading
+    70 - Generate any Output
+    90 - Very easy cases "subject - verb - object" without adjectives
