@@ -31,10 +31,10 @@ grammar = [
     Rule("B", ("C", "A"), 0.15),
     Rule("B", ("C", "C"), 0.25),
     Rule("B", "b", 0.3),
-    Rule("C", ("B", "A"), 0.2),
-    Rule("C", ("C", "B"), 0.2),
-    Rule("C", "b", 0.15),
-    Rule("C", "c", 0.15)
+    Rule("C", ("B", "A"), 0.35),
+    Rule("C", ("C", "B"), 0.25),
+    Rule("C", "b", 0.2),
+    Rule("C", "c", 0.2)
 ]
 
 rulesDict = {}
