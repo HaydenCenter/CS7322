@@ -91,7 +91,7 @@ def getDirectionObjectQuestion(sent):
         dobj_phrase = sent[dobj.left_edge.i:dobj.right_edge.i + 1]
 
         qw = getQuestionWord(dobj_phrase, dobj)
-        printWithReplacement(dobj_phrase, sent, verb=None, question_word=qw)    
+        printWithReplacement(dobj_phrase, sent, verb=None, question_word=qw)
 
 def getQuestions(sent):
     print(f'\n{sent}')
