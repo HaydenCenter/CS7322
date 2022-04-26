@@ -13,9 +13,17 @@ def isPerson(token):
     if token.pos_ == "PROPN" or "Prs" in token.morph.get("PronType"):
         return True
 
-    for synset in wordnet.synsets(token.text, pos=wordnet.NOUN):
-        person_ss = wordnet.synset('person.n.01')
+    person_ss = wordnet.synset('person.n.01')
+    synsets = wordnet.synsets(token.text, pos=wordnet.NOUN)
+    count = 0
+    total = 0
+    for synset in synsets:
+        x = sum(lemma.count() for lemma in synset.lemmas() if lemma.name() == token.lemma_)
+        total += x
         if person_ss in synset.lowest_common_hypernyms(person_ss):
+            count += x
+
+    if count > 0 and total / count > 0.5:
             return True
     
     return False
@@ -45,49 +53,60 @@ def conjugateVerb(token):
     else:
         return conjugate(token.lemma_, tense, 3, SG)
 
+def printWithReplacement(phrase, sent, verb, question_word):
+    for token in sent[:getEnd(sent)]:
+        if token == verb:
+            if verb.text[0] == '\'': print(' ', end="")
+            print(conjugateVerb(verb), end=verb.whitespace_)
+        elif token.i == phrase.start:
+            print(question_word, end=phrase[-1].whitespace_)
+        elif token not in phrase.subtree:
+            print(token.text_with_ws, end="")
+    print("?")
+
+def getQuestionWord(phrase, root):
+    capital = phrase.start == 0
+    person = isPerson(root)
+    question_word = "who" if person else "what"
+    if capital:
+        question_word = question_word.capitalize()
+
+    return question_word
 
 
 def getSubjectQuestion(sent):
     noun = next(chunk.root for chunk in sent.noun_chunks if chunk.root.dep_ == "nsubj")
-    subject = sent[noun.left_edge.i:noun.right_edge.i + 1]
+    noun_phrase = sent[noun.left_edge.i:noun.right_edge.i + 1]
 
     verb = sent.root
     if verb.tag_ == 'VBG':
         verb = [c for c in verb.children if c.dep_ == "aux"][-1]
 
-    
-    conjugateVerb(verb)
+    qw = getQuestionWord(noun_phrase, noun)
+    printWithReplacement(noun_phrase, sent, verb, question_word=qw)
 
-    capital = subject.start == 0
-    person = isPerson(noun)
-    question_word = "who" if person else "what"
-    if capital:
-        question_word = question_word.capitalize()
+def getDirectionObjectQuestion(sent):
+    dobjs = [token for token in sent if token.dep_ == "dobj"]
+    if dobjs:
+        dobj = dobjs[0]
+        dobj_phrase = sent[dobj.left_edge.i:dobj.right_edge.i + 1]
 
-    for token in sent[:getEnd(sent)]:
-        if token == verb:
-            if verb.text[0] == '\'': print(' ', end="")
-            print(conjugateVerb(verb), end=verb.whitespace_)
-        elif token.i == subject.start:
-            print(question_word, end=subject[-1].whitespace_)
-        elif token not in subject.subtree:
-            print(token.text_with_ws, end="")
-    print("?")
-
+        qw = getQuestionWord(dobj_phrase, dobj)
+        printWithReplacement(dobj_phrase, sent, verb=None, question_word=qw)    
 def getQuestions(sent):
-    doc = nlp(sent)
+    print(f'\n{sent}')
+
+    doc = next(nlp(sent).sents)
 
     # Questions
-    getSubjectQuestion(next(doc.sents)) 
+    getSubjectQuestion(doc)
+    getDirectionObjectQuestion(doc)
 
-    print(sent)
-    print()
-
-interactive = False
+interactive = True
 
 if interactive:
-    # sentence = input("Enter a sentence: ")
-    getQuestions("Samantha, Elizabeth, and Joan are on the committee.")
+    sentence = input("Enter a sentence: ")
+    getQuestions(sentence)
 else:
     f = open("example.txt")
     sentences = f.read().splitlines()
