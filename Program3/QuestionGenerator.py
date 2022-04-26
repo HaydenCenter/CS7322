@@ -93,6 +93,15 @@ def getDirectionObjectQuestion(sent):
         qw = getQuestionWord(dobj_phrase, dobj)
         printWithReplacement(dobj_phrase, sent, verb=None, question_word=qw)
 
+def getPrepositionQuestion(sent):
+    pobjs = [token for token in sent if token.dep_ == "pobj"]
+    if pobjs:
+        pobj = pobjs[0]
+        pobj_phrase = sent[pobj.left_edge.i:pobj.right_edge.i + 1]
+
+        qw = getQuestionWord(pobj_phrase, pobj)
+        printWithReplacement(pobj_phrase, sent, verb=None, question_word=qw)
+
 def getQuestions(sent):
     print(f'\n{sent}')
 
@@ -101,6 +110,7 @@ def getQuestions(sent):
     # Questions
     getSubjectQuestion(doc)
     getDirectionObjectQuestion(doc)
+    getPrepositionQuestion(doc)
 
 interactive = True
 
