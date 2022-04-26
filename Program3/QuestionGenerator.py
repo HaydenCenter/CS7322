@@ -5,7 +5,7 @@ from pattern.text.en import conjugate, PAST, PRESENT, SG, PL
 nlp = spacy.load("en_core_web_sm")
 
 try:
-    print(conjugate('gave'))
+    conjugate('gave')
 except:
     pass
 
