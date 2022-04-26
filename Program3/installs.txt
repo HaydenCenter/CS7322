@@ -1,4 +1,7 @@
+pip install pattern
+sudo apt install default-libmysqlclient-dev
+
+pip install nltk
+
 pip install spacy
 python -m spacy download en_core_web_sm
-
-pip install pattern
