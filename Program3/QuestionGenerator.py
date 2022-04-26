@@ -53,6 +53,15 @@ def conjugateVerb(token):
     else:
         return conjugate(token.lemma_, tense, 3, SG)
 
+def getQuestionWord(phrase, root):
+    capital = phrase.start == 0
+    person = isPerson(root)
+    question_word = "who" if person else "what"
+    if capital:
+        question_word = question_word.capitalize()
+
+    return question_word
+
 def printWithReplacement(phrase, sent, verb, question_word):
     for token in sent[:getEnd(sent)]:
         if token == verb:
@@ -63,16 +72,6 @@ def printWithReplacement(phrase, sent, verb, question_word):
         elif token not in phrase.subtree:
             print(token.text_with_ws, end="")
     print("?")
-
-def getQuestionWord(phrase, root):
-    capital = phrase.start == 0
-    person = isPerson(root)
-    question_word = "who" if person else "what"
-    if capital:
-        question_word = question_word.capitalize()
-
-    return question_word
-
 
 def getSubjectQuestion(sent):
     noun = next(chunk.root for chunk in sent.noun_chunks if chunk.root.dep_ == "nsubj")
@@ -93,6 +92,7 @@ def getDirectionObjectQuestion(sent):
 
         qw = getQuestionWord(dobj_phrase, dobj)
         printWithReplacement(dobj_phrase, sent, verb=None, question_word=qw)    
+
 def getQuestions(sent):
     print(f'\n{sent}')
 
